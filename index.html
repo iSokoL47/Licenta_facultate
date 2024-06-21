@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART HOME</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 40px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 24px;
+            margin: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+        }
+        button:focus {
+            outline: none;
+        }
+        .microphone-icon {
+            font-size: 48px;
+        }
+        p {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #333;
+        }
+        nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        nav a {
+            font-size: 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            color: #4CAF50;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <a href="#monitor">Monitor</a>
+        <a href="#control-manual">Control Manual</a>
+    </nav>
+    <h1>SMART HOME</h1>
+    <h2>Voice Control</h2>
+    <button id="start-record-btn">
+        <i class="fas fa-microphone microphone-icon"></i>
+    </button>
+    <p id="recorded-text"></p>
+    <script>
+    // Configure speech recognition
+    let recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+
+    // Event when recording starts
+    recognition.onstart = function() {
+        document.getElementById('recorded-text').innerHTML = "Recording...";
+    };
+
+    // Event when result is received
+    recognition.onresult = function(event) {
+        let transcript = event.results[0][0].transcript;
+        document.getElementById('recorded-text').innerHTML = transcript;
+        sendCommand(transcript);
+    };
+
+    // Event when an error occurs
+    recognition.onerror = function(event) {
+        document.getElementById('recorded-text').innerHTML = 'Error occurred: ' + event.error;
+    };
+
+    // Button to start recording
+    document.getElementById('start-record-btn').onclick = function() {
+        recognition.start();
+    };
+
+    // Function to send command to Flask server
+    function sendCommand(command) {
+        fetch('/control', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command: command })
+        })
+        .then(response => response.text())
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    </script>
+</body>
+</html>
